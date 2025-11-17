@@ -15,12 +15,12 @@
 </div> -->
 
 <div align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Orbitron&size=20&duration=3000&pause=1000&color=005DE3&center=true&vCenter=true&width=800&lines=Welcome+to+LoopTool;Closing+the+Data-Training+Loop+for Robust+LLM+Tool+Calls;Powered+by+SEU+x+Monash+x+Xiaohongshu+Inc." alt="Typing Animation" />
+  <img src="https://readme-typing-svg.demolab.com?font=Orbitron&size=20&duration=3000&pause=1000&color=005DE3&center=true&vCenter=true&width=800&lines=Welcome+to+LoopTool;Closing+the+Data-Training+Loop+for+Robust+LLM+Tool+Calls;Powered+by+SJTU+Xiaohongshu+Inc.
+  " alt="Typing Animation" />
 </div>
 
-
 ## 📣 Latest News
-
+- **[November 14, 2025]**: 🔥 LoopTool-8B is available on **[Hugging Face](https://huggingface.co/zhuiguang-ning/LoopTool-8B)**. LoopTool-32B, along with associated datasets, is scheduled to be released soon.
 - **[November 13, 2025]**: 📄 Our paper is now available on **[arXiv](https://arxiv.org/abs/2511.09148v1)** and **[Hugging Face](https://huggingface.co/papers/2511.09148)**.
 - **[November 13, 2025]**: 🚀 Our codebase released. You can use LoopTool to construct **specific dialogues for your own toolset**, andn finetune language model optimized for particular tools using RL algorithms. You can further refine performance by iteratively updating the training data and the model training process.
 
