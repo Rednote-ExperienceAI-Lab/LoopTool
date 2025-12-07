@@ -210,7 +210,7 @@ def call_generation_api(messages: List[Dict], clients: List[OpenAI], models: lis
 
 def extract_tools_from_instruction(instruction: str) -> str:
     """从instruction中提取工具定义"""
-    tools_pattern = r'<tools>\n(.*?)\n</tools>'
+    tools_pattern = r'<tools>\s*(.*?)\s*</tools>'
     tools_match = re.search(tools_pattern, instruction, re.DOTALL)
     
     if tools_match:
@@ -356,8 +356,8 @@ def parse_generated_sample(api_response: str) -> Tuple[Optional[str], Optional[s
     """解析API生成的样本，提取INPUT和OUTPUT部分"""
     try:
         # 查找INPUT和OUTPUT部分
-        input_match = re.search(r'INPUT:\s*(.*?)(?=OUTPUT:|$)', api_response, re.DOTALL)
-        output_match = re.search(r'OUTPUT:\s*(.*?)$', api_response, re.DOTALL)
+        input_match = re.search(r'INPUT:\s*(.*?)(?=\nOUTPUT:|$)', api_response, re.DOTALL)
+        output_match = re.search(r'\nOUTPUT:\s*(.*?)$', api_response, re.DOTALL)
         
         input_content = input_match.group(1).strip() if input_match else None
         output_content = output_match.group(1).strip() if output_match else None
@@ -372,15 +372,52 @@ def validate_generated_sample(input_content: str, output_content: str, original_
     if not input_content or not output_content:
         return False
     
-    # 检查INPUT是否包含对话格式
-    # if "<|im_start|>" not in input_content or "<|im_end|>" not in input_content:
-    #     return False
-        
     # 检查OUTPUT是否包含tool_call格式
     if "<tool_call>" not in output_content:
         return False
+
+    try:
+        # 获取允许的工具名称列表
+        valid_tool_names = set()
+        if original_tools and original_tools.strip():
+            try:
+                tools_data = json.loads(original_tools)
+                if isinstance(tools_data, list):
+                    for tool in tools_data:
+                        if isinstance(tool, dict) and 'name' in tool:
+                            valid_tool_names.add(tool['name'])
+            except json.JSONDecodeError:
+                # 如果original_tools不是JSON格式，可能无法验证，这里选择放行或仅做基本检查
+                # 为了安全起见，如果解析失败但有工具调用，我们无法验证名称，这可能是有风险的
+                pass
         
-    # 可以添加更多验证逻辑
+        # 提取生成内容中的所有工具调用
+        # <tool_call>
+        # {"name": "func", ...}
+        # </tool_call>
+        tool_calls = re.findall(r'<tool_call>\s*(.*?)\s*</tool_call>', output_content, re.DOTALL)
+        
+        if not tool_calls:
+            return False
+            
+        for tool_call_str in tool_calls:
+            try:
+                tool_call = json.loads(tool_call_str)
+                name = tool_call.get("name")
+                if not name:
+                    return False
+                
+                # 如果我们成功解析了原始工具列表，就进行名称验证
+                if valid_tool_names and name not in valid_tool_names:
+                    #print(f"Validation failed: Hallucinated tool '{name}'")
+                    return False
+            except json.JSONDecodeError:
+                return False
+                
+    except Exception as e:
+        print(f"Validation error: {e}")
+        return False
+
     return True
 
 def generate_single_sample(index: int, error_sample: dict, clients: List[OpenAI], models: list, 
